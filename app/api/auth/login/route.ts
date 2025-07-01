@@ -1,12 +1,19 @@
 export const runtime = 'nodejs';         // ⬅️ force Node.js runtime (needed for Prisma, bcrypt, etc.)
 export const dynamic = 'force-dynamic';  // ⬅️ prevents static optimization errors
-
+export const preferredRegion = 'home'; // optional
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, generateToken } from '@/lib/auth';
 
+export async function GET() {
+  const secret = process.env.JWT_SECRET;
+  return NextResponse.json({ loaded: !!secret });
+}
+
 export async function POST(request: NextRequest) {
+  console.log('JWT_SECRET:', process.env.JWT_SECRET); // ✅ Add this line
+
   try {
     const body = await request.json();
     const { email, password } = body;
