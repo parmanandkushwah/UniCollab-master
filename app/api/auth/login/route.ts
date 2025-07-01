@@ -7,8 +7,10 @@ import { prisma } from '@/lib/prisma';
 import { verifyPassword, generateToken } from '@/lib/auth';
 
 export async function GET() {
-  const secret = process.env.JWT_SECRET;
-  return NextResponse.json({ loaded: !!secret });
+  return NextResponse.json({
+    JWT_SECRET: process.env.JWT_SECRET || 'NOT_FOUND',
+    DATABASE_URL: process.env.DATABASE_URL ? 'LOADED' : 'NOT_FOUND'
+  });
 }
 
 export async function POST(request: NextRequest) {
