@@ -1,3 +1,17 @@
+interface Note {
+  id: string;
+  title: string;
+  description: string;
+  subject: string;
+  rating?: number;
+  downloads?: number;
+  driveLink?: string;
+  googleDriveLink?: string;
+  author?: {
+    fullName: string;
+  };
+}
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -27,7 +41,7 @@ import DashboardLayout from '@/components/layout/dashboard-layout';
 export default function DashboardPage() {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState('overview');
-  const [recentNotes, setRecentNotes] = useState([]);
+  const [recentNotes, setRecentNotes] = useState<Note[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(true);
 
   useEffect(() => {
