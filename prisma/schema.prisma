@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model University {
+  id              String   @id @default(cuid())
+  name            String
+  domain          String   @unique
+  website         String?
+  country         String
+  city            String
+  address         String?
+  establishedYear Int?
+  studentCount    String?
+  universityType  String?
+  description     String?
+  isActive        Boolean  @default(false)
+  planType        String   @default("starter")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  users User[]
+  notes Note[]
+
+  @@map("universities")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  fullName     String
+  studentId    String?
+  isVerified   Boolean  @default(false)
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  universityId String
+  university   University @relation(fields: [universityId], references: [id])
+  notes        Note[]
+  purchases    Purchase[]
+  reviews      Review[]
+
+  @@map("users")
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  subject     String
+  course      String
+  year        String
+  price       Float
+  driveLink   String   // Google Drive link instead of file upload
+  tags        String[] // Array of tags
+  isApproved  Boolean  @default(true)
+  isPremium   Boolean  @default(true)
+  downloads   Int      @default(0)
+  rating      Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId     String
+  author       User       @relation(fields: [authorId], references: [id])
+  universityId String
+  university   University @relation(fields: [universityId], references: [id])
+  purchases    Purchase[]
+  reviews      Review[]
+
+  @@map("notes")
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
+  amount    Float
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  noteId String
+  note   Note   @relation(fields: [noteId], references: [id])
+
+  @@unique([userId, noteId])
+  @@map("purchases")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      @db.SmallInt
+  comment   String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  noteId String
+  note   Note   @relation(fields: [noteId], references: [id])
+
+  @@unique([userId, noteId])
+  @@map("reviews")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+  UNIVERSITY_ADMIN
+}
