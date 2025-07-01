@@ -10,8 +10,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password } = body;
 
-    console.log("📨 Login attempt:", { email });
-
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
@@ -25,13 +23,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      console.log("❌ No user found for email:", email);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const isValidPassword = await verifyPassword(password, user.password);
-    console.log("🔑 Password valid?", isValidPassword);
-
     if (!isValidPassword) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
@@ -55,12 +50,12 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return response;
   } catch (error) {
-    console.error('❗ Login Error:', error);
+    console.error('Login Error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
