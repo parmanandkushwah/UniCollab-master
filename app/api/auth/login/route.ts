@@ -1,3 +1,7 @@
+export const runtime = 'nodejs';         // ⬅️ force Node.js runtime (needed for Prisma, bcrypt, etc.)
+export const dynamic = 'force-dynamic';  // ⬅️ prevents static optimization errors
+
+
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, generateToken } from '@/lib/auth';
