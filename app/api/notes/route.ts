@@ -1,7 +1,6 @@
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
@@ -18,24 +17,18 @@ export async function GET(request: NextRequest) {
     const where: any = {};
 
     if (subject && subject !== 'all') {
-      where.subject = {
-        contains: subject,
-        mode: 'insensitive'
-      };
+      where.subject = { contains: subject, mode: 'insensitive' };
     }
 
     if (year && year !== 'all') {
-      where.year = {
-        contains: year,
-        mode: 'insensitive'
-      };
+      where.year = { contains: year, mode: 'insensitive' };
     }
 
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
-        { tags: { has: search } }
+        { tags: { has: search } },
       ];
     }
 
@@ -51,64 +44,43 @@ export async function GET(request: NextRequest) {
         author: {
           select: {
             fullName: true,
-            university: {
-              select: {
-                name: true
-              }
-            }
-          }
+            university: { select: { name: true } },
+          },
         },
         _count: {
           select: {
             reviews: true,
-            purchases: true
-          }
-        }
+            purchases: true,
+          },
+        },
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json(notes);
-
   } catch (error) {
-    console.error('Notes fetch error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Notes Fetch Error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get('auth-token')?.value;
-    
     if (!token) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const decoded = verifyToken(token);
     if (!decoded) {
-      return NextResponse.json(
-        { error: 'Invalid token' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const body = await request.json();
     const { title, description, subject, course, year, price, driveLink, tags } = body;
 
-    // Validate Google Drive link
     if (!driveLink || !driveLink.includes('drive.google.com')) {
-      return NextResponse.json(
-        { error: 'Please provide a valid Google Drive link' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid Google Drive link' }, { status: 400 });
     }
 
     const note = await prisma.note.create({
@@ -123,32 +95,24 @@ export async function POST(request: NextRequest) {
         tags: tags || [],
         authorId: decoded.userId,
         universityId: decoded.universityId,
-        isApproved: false // Requires approval
+        isApproved: false,
       },
       include: {
         author: {
           select: {
             fullName: true,
-            university: {
-              select: {
-                name: true
-              }
-            }
-          }
-        }
-      }
+            university: { select: { name: true } },
+          },
+        },
+      },
     });
 
     return NextResponse.json({
       message: 'Note uploaded successfully and is pending approval',
-      note
+      note,
     });
-
   } catch (error) {
-    console.error('Note upload error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Note Upload Error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

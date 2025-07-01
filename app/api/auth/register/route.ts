@@ -1,84 +1,46 @@
-export const runtime = 'nodejs';          // ⬅️ Add this
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fullName, email, password, university, studentId } = body;
+    const { email, password, fullName, universityId } = body;
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
-
+    // 1. Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'User already exists' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
-    // Find or create university
-    let universityRecord = await prisma.university.findFirst({
-      where: { name: university }
+    // 2. Check if provided universityId exists
+    const universityExists = await prisma.university.findUnique({
+      where: { id: universityId },
     });
 
-    if (!universityRecord) {
-      // Extract domain from email
-      const domain = email.split('@')[1];
-      
-      universityRecord = await prisma.university.create({
-        data: {
-          name: university,
-          domain: domain,
-          country: 'Unknown',
-          city: 'Unknown',
-          isActive: true
-        }
-      });
+    if (!universityExists) {
+      return NextResponse.json({ error: 'Invalid university ID' }, { status: 400 });
     }
 
-    // Hash password
+    // 3. Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
+    // 4. Create user
     const user = await prisma.user.create({
       data: {
-        fullName,
         email,
         password: hashedPassword,
-        studentId,
-        universityId: universityRecord.id,
-        isVerified: false
+        fullName,
+        universityId,
       },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        isVerified: true,
-        university: {
-          select: {
-            name: true
-          }
-        }
-      }
     });
 
-    return NextResponse.json({
-      message: 'User created successfully',
-      user
-    });
-
+    return NextResponse.json({ message: 'Registration successful', user });
   } catch (error) {
-    console.error('Registration error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Register Error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
