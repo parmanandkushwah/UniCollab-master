@@ -12,7 +12,7 @@ datasource db {
 
 model University {
   id              String   @id @default(cuid())
-  name            String
+  name            String  @unique  // ✅ THIS LINE SHOULD BE PRESENT
   domain          String   @unique
   website         String?
   country         String

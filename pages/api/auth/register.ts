@@ -4,42 +4,52 @@ import { hashPassword } from '@/lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { email, password, fullName, universityId } = req.body;
+    const { email, password, fullName, university } = req.body;
 
-    // 1. Check if user already exists
+    if (!email || !password || !fullName || !university) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // 🔍 Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // 2. Check if universityId is valid
-    const universityExists = await prisma.university.findUnique({
-      where: { id: universityId },
+    // 🔍 Find university by name
+    const universityRecord = await prisma.university.findFirst({
+      where: {
+        name: {
+          equals: university,
+          mode: 'insensitive',
+        },
+      },
     });
-    if (!universityExists) {
-      return res.status(400).json({ error: 'Invalid university ID' });
+
+    if (!universityRecord) {
+      return res.status(400).json({ error: 'Invalid university name' });
     }
 
-    // 3. Hash password
+    // 🔐 Hash password
     const hashedPassword = await hashPassword(password);
 
-    // 4. Create user
+    // 🧑‍🎓 Create new user
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         fullName,
-        universityId,
+        universityId: universityRecord.id,
       },
     });
 
-    return res.status(200).json({ message: 'Registration successful', user });
+    return res.status(201).json({ message: 'Registration successful', user });
   } catch (error) {
-    console.error('Register Error:', error);
+    console.error('Registration Error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
