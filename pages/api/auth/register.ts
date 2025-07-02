@@ -1,28 +1,27 @@
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
   try {
-    const body = await request.json();
-    const { email, password, fullName, universityId } = body;
+    const { email, password, fullName, universityId } = req.body;
 
     // 1. Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
+      return res.status(400).json({ error: 'User already exists' });
     }
 
-    // 2. Check if provided universityId exists
+    // 2. Check if universityId is valid
     const universityExists = await prisma.university.findUnique({
       where: { id: universityId },
     });
-
     if (!universityExists) {
-      return NextResponse.json({ error: 'Invalid university ID' }, { status: 400 });
+      return res.status(400).json({ error: 'Invalid university ID' });
     }
 
     // 3. Hash password
@@ -38,9 +37,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ message: 'Registration successful', user });
+    return res.status(200).json({ message: 'Registration successful', user });
   } catch (error) {
     console.error('Register Error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }

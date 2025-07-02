@@ -1,49 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
+import cookie from 'cookie';
 
-export async function POST(request: NextRequest) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).json({ error: `Method ${req.method} not allowed` });
+  }
+
   try {
-    const token = request.cookies.get('auth-token')?.value;
-    
+    const cookies = cookie.parse(req.headers.cookie || '');
+    const token = cookies['auth-token'];
+
     if (!token) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const decoded = verifyToken(token);
     if (!decoded) {
-      return NextResponse.json(
-        { error: 'Invalid token' },
-        { status: 401 }
-      );
+      return res.status(401).json({ error: 'Invalid token' });
     }
 
-    const body = await request.json();
-    const { noteId } = body;
+    const { noteId } = req.body;
 
     // Check if note exists
     const note = await prisma.note.findUnique({
       where: { id: noteId },
       include: {
         author: {
-          select: {
-            fullName: true
-          }
+          select: { fullName: true }
         }
       }
     });
 
     if (!note) {
-      return NextResponse.json(
-        { error: 'Note not found' },
-        { status: 404 }
-      );
+      return res.status(404).json({ error: 'Note not found' });
     }
 
-    // Check if user already purchased this note
+    // Check if already purchased
     const existingPurchase = await prisma.purchase.findUnique({
       where: {
         userId_noteId: {
@@ -54,10 +49,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingPurchase) {
-      return NextResponse.json(
-        { error: 'You have already purchased this note' },
-        { status: 400 }
-      );
+      return res.status(400).json({ error: 'You have already purchased this note' });
     }
 
     // Create purchase record
@@ -69,7 +61,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Update note download count
+    // Increment download count
     await prisma.note.update({
       where: { id: noteId },
       data: {
@@ -79,7 +71,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({
+    return res.status(200).json({
       message: 'Purchase successful',
       purchase,
       driveLink: note.driveLink
@@ -87,9 +79,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Purchase error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
