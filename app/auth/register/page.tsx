@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -25,15 +26,23 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const universities = [
-    'Harvard University',
-    'Stanford University',
-    'MIT',
-    'University of California, Berkeley',
-    'Oxford University',
-    'Cambridge University',
-    'Other'
-  ];
+  const [universities, setUniversities] = useState<string[]>([]);
+
+useEffect(() => {
+  const fetchUniversities = async () => {
+    try {
+      const res = await fetch('/api/universities');
+      const data = await res.json();
+      const universityNames = data.map((uni: { id: string; name: string }) => uni.name); // ✅ correct for your API
+      setUniversities(universityNames);
+    } catch (error) {
+      console.error('Failed to fetch universities:', error);
+    }
+  };
+
+  fetchUniversities();
+}, []);
+
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
