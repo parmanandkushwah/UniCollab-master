@@ -17,10 +17,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="relative z-0">
-      <body className={inter.className}>
+    <html lang="en">
+      <body className={inter.className} style={{ overflow: 'visible' }}>
         <Providers>
-          {children}
+          <div style={{ position: 'relative', zIndex: 0 }}>
+            {children}
+          </div>
         </Providers>
         <Toaster />
       </body>

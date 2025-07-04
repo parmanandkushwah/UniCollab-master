@@ -80,3 +80,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+body {
+  overflow: visible;
+  position: relative;
+  z-index: 0;
+}
