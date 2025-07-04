@@ -1,4 +1,4 @@
-import './globals.css'; // ✅ Keep this only if the file exists at app/globals.css
+import './globals.css'; // ✅ Or '../styles/globals.css' depending on actual file location
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="relative z-0">
       <body className={inter.className}>
         <Providers>
           {children}
