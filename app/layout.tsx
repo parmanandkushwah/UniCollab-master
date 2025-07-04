@@ -1,10 +1,8 @@
-import './globals.css';
+import './globals.css'; // ✅ Keep this only if the file exists at app/globals.css
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import { Providers } from './providers';
-import '../styles/globals.css'; // ← Update to correct path
-
 
 const inter = Inter({ subsets: ['latin'] });
 
