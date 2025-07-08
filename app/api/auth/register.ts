@@ -1,23 +1,21 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+// app/api/auth/register/route.ts
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
+export async function POST(req: NextRequest) {
   try {
-    const { email, password, fullName, university } = req.body;
+    const body = await req.json();
+    const { email, password, fullName, university } = body;
 
     if (!email || !password || !fullName || !university) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     // 🔍 Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
+      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
     // 🔍 Find university by name
@@ -31,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!universityRecord) {
-      return res.status(400).json({ error: 'Invalid university name' });
+      return NextResponse.json({ error: 'Invalid university name' }, { status: 400 });
     }
 
     // 🔐 Hash password
@@ -47,9 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    return res.status(201).json({ message: 'Registration successful', user });
+    return NextResponse.json({ message: 'Registration successful', user }, { status: 201 });
   } catch (error) {
     console.error('Registration Error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
