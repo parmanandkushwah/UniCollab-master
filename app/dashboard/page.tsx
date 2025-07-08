@@ -17,6 +17,7 @@ interface Note {
 import { useState, useEffect } from 'react';
 // import { Link } from 'react-router-dom';
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +40,16 @@ import { Input } from '@/components/ui/input';
 import DashboardLayout from '@/components/layout/dashboard-layout';
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // 🔒 Redirect if not logged in
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/login');
+    }
+  }, [status, router]);
+
   const [activeTab, setActiveTab] = useState('overview');
   const [recentNotes, setRecentNotes] = useState<Note[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(true);
@@ -48,19 +58,16 @@ export default function DashboardPage() {
     const fetchNotes = async () => {
       try {
         const response = await fetch('/api/notes');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setRecentNotes(data);
       } catch (error) {
         console.error("Failed to fetch notes:", error);
-        // Optionally, set an error state here to display to the user
       } finally {
         setLoadingNotes(false);
       }
     };
-
+    
     fetchNotes();
   }, []);
 
