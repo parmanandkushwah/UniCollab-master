@@ -1,16 +1,14 @@
-// pages/api/auth/login.ts
+// app/api/auth/login/route.ts
 
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, generateToken } from '@/lib/auth';
+import { serialize } from 'cookie';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
+export async function POST(req: NextRequest) {
   try {
-    const { email, password } = req.body;
+    const body = await req.json();
+    const { email, password } = body;
 
     const user = await prisma.user.findUnique({
       where: { email },
@@ -22,12 +20,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const isValidPassword = await verifyPassword(password, user.password);
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const token = generateToken({
@@ -37,20 +35,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       universityId: user.universityId,
     });
 
-    const { password: _, ...userData } = user;
+    const cookie = serialize('auth-token', token, {
+      httpOnly: true,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
 
-    res.setHeader(
-      'Set-Cookie',
-      `auth-token=${token}; HttpOnly; Path=/; Max-Age=${60 * 60 * 24 * 7}`
+    const response = NextResponse.json(
+      {
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+          university: user.university,
+        },
+        token,
+      },
+      { status: 200 }
     );
 
-    return res.status(200).json({
-      message: 'Login successful',
-      user: userData,
-      token,
-    });
+    response.headers.set('Set-Cookie', cookie);
+    return response;
+
   } catch (error) {
     console.error('Login Error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
