@@ -3,7 +3,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, generateToken } from '@/lib/auth';
-import { serialize } from 'cookie';
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,29 +34,26 @@ export async function POST(req: NextRequest) {
       universityId: user.universityId,
     });
 
-    const cookie = serialize('auth-token', token, {
+    // ✅ Proper cookie handling for Next.js app router
+    const response = NextResponse.json({
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        university: user.university,
+      },
+    });
+
+    response.cookies.set('auth-token', token, {
       httpOnly: true,
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
     });
 
-    const response = NextResponse.json(
-      {
-        message: 'Login successful',
-        user: {
-          id: user.id,
-          email: user.email,
-          fullName: user.fullName,
-          university: user.university,
-        },
-        token,
-      },
-      { status: 200 }
-    );
-
-    response.headers.set('Set-Cookie', cookie);
     return response;
-
   } catch (error) {
     console.error('Login Error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

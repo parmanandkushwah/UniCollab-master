@@ -1,30 +1,26 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
 import cookie from 'cookie';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).json({ error: `Method ${req.method} not allowed` });
-  }
-
+export async function POST(req: NextRequest) {
   try {
-    const cookies = cookie.parse(req.headers.cookie || '');
+    const cookieHeader = req.headers.get('cookie') || '';
+    const cookies = cookie.parse(cookieHeader);
     const token = cookies['auth-token'];
 
     if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const decoded = verifyToken(token);
     if (!decoded) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const { noteId } = req.body;
+    const body = await req.json();
+    const { noteId } = body;
 
-    // Check if note exists
     const note = await prisma.note.findUnique({
       where: { id: noteId },
       include: {
@@ -35,33 +31,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!note) {
-      return res.status(404).json({ error: 'Note not found' });
+      return NextResponse.json({ error: 'Note not found' }, { status: 404 });
     }
 
-    // Check if already purchased
     const existingPurchase = await prisma.purchase.findUnique({
       where: {
         userId_noteId: {
           userId: decoded.userId,
-          noteId: noteId
+          noteId
         }
       }
     });
 
     if (existingPurchase) {
-      return res.status(400).json({ error: 'You have already purchased this note' });
+      return NextResponse.json({ error: 'Already purchased' }, { status: 400 });
     }
 
-    // Create purchase record
     const purchase = await prisma.purchase.create({
       data: {
         userId: decoded.userId,
-        noteId: noteId,
+        noteId,
         amount: note.price
       }
     });
 
-    // Increment download count
     await prisma.note.update({
       where: { id: noteId },
       data: {
@@ -71,14 +64,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-    return res.status(200).json({
+    return NextResponse.json({
       message: 'Purchase successful',
       purchase,
       driveLink: note.driveLink
-    });
+    }, { status: 200 });
 
   } catch (error) {
     console.error('Purchase error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
