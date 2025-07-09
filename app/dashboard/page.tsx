@@ -18,7 +18,6 @@ import { useState, useEffect } from 'react';
 // import { Link } from 'react-router-dom';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +39,7 @@ import { Input } from '@/components/ui/input';
 import DashboardLayout from '@/components/layout/dashboard-layout';
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  // const { data: session, status } = useSession();
   const router = useRouter();
 
   // 🔒 Redirect if not logged in
@@ -67,7 +66,7 @@ export default function DashboardPage() {
         setLoadingNotes(false);
       }
     };
-    
+
     fetchNotes();
   }, []);
 
@@ -102,7 +101,8 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-r from-blue-600 to-emerald-600 rounded-xl p-8 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Welcome back {session?.user?.name || ''}!</h1>
+             <h1 className="text-3xl font-bold mb-2">Welcome back!</h1>
+
               <p className="text-blue-100">
                 Ready to continue your academic journey? Get the best material now
               </p>
