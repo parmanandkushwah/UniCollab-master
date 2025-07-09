@@ -44,11 +44,11 @@ export default function DashboardPage() {
 
   // 🔒 Redirect if not logged in
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login');
-    }
-  }, [status, router]);
-
+  const token = localStorage.getItem("token"); // ya jo bhi use kar rahe ho
+  if (!token) {
+    router.push('/auth/login');
+  }
+}, [router]); 
   const [activeTab, setActiveTab] = useState('overview');
   const [recentNotes, setRecentNotes] = useState<Note[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(true);
