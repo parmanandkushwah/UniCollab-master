@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
-import cookie from 'cookie';
+import { verifyToken, JwtPayload } from '@/lib/auth';
+import * as cookie from 'cookie';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,13 +13,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
+    const decoded = verifyToken(token) as JwtPayload | null;
+    if (!decoded || !decoded.userId) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { noteId } = body;
+    const { noteId } = await req.json();
 
     const note = await prisma.note.findUnique({
       where: { id: noteId },
@@ -51,7 +50,7 @@ export async function POST(req: NextRequest) {
       data: {
         userId: decoded.userId,
         noteId,
-        amount: note.price
+        amount: note.price ?? 0
       }
     });
 

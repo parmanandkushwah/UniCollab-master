@@ -83,6 +83,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/cookie": "^0.6.0",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^24.0.10",
     "ts-node": "^10.9.2",

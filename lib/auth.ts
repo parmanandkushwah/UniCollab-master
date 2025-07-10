@@ -1,5 +1,3 @@
-// lib/auth.ts
-
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
@@ -11,17 +9,25 @@ export async function verifyPassword(password: string, hashedPassword: string): 
   return bcrypt.compare(password, hashedPassword);
 }
 
-export function generateToken(payload: any): string {
+export interface JwtPayload {
+  userId: string;
+  email?: string;
+  role?: string;
+  fullName?: string;
+  universityId?: string;
+}
+
+export function generateToken(payload: JwtPayload): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error('JWT_SECRET is not defined');
   return jwt.sign(payload, secret, { expiresIn: '7d' });
 }
 
-export function verifyToken(token: string): any {
+export function verifyToken(token: string): JwtPayload | null {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error('JWT_SECRET is not defined');
   try {
-    return jwt.verify(token, secret);
+    return jwt.verify(token, secret) as JwtPayload;
   } catch (error) {
     console.error('JWT Verification Failed:', error);
     return null;
