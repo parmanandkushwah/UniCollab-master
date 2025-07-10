@@ -42,13 +42,7 @@ export default function DashboardPage() {
   // const { data: session, status } = useSession();
   const router = useRouter();
 
-  // 🔒 Redirect if not logged in
-  useEffect(() => {
-  const token = localStorage.getItem("token"); // ya jo bhi use kar rahe ho
-  if (!token) {
-    router.push('/auth/login');
-  }
-}, [router]); 
+  
   const [activeTab, setActiveTab] = useState('overview');
   const [recentNotes, setRecentNotes] = useState<Note[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(true);
