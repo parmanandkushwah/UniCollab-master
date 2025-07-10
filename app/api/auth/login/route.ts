@@ -18,12 +18,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-    }
-
-    const isValidPassword = await verifyPassword(password, user.password);
-    if (!isValidPassword) {
+    if (!user || !(await verifyPassword(password, user.password))) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
@@ -34,9 +29,10 @@ export async function POST(req: NextRequest) {
       universityId: user.universityId,
     });
 
-    // ✅ Proper cookie handling for Next.js app router
+    // ✅ Send token + cookie
     const response = NextResponse.json({
       message: 'Login successful',
+      token, // <-- important to return this so frontend can store in localStorage
       user: {
         id: user.id,
         email: user.email,
@@ -48,7 +44,7 @@ export async function POST(req: NextRequest) {
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
     });

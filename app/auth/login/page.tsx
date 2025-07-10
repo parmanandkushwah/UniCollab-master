@@ -24,33 +24,35 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // ✅ Important for saving cookie
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (response.ok) {
-        toast.success('Login successful!');
-        router.push('/dashboard');
-      } else {
-        toast.error(data.error || 'Login failed');
-      }
-    } catch (error) {
-      toast.error('Something went wrong. Please try again.');
-    } finally {
-      setIsLoading(false);
+    if (response.ok) {
+      localStorage.setItem('token', data.token); // ✅ Save token in localStorage
+      toast.success('Login successful!');
+      router.push('/dashboard'); // ✅ Redirect after successful login
+    } else {
+      toast.error(data.error || 'Login failed');
     }
-  };
+  } catch (error) {
+    toast.error('Something went wrong. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center p-4">
