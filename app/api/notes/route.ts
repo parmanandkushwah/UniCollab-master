@@ -28,7 +28,9 @@ export async function POST(req: NextRequest) {
       year,
       price,
       driveLink,
-      tags
+      tags,
+      authorId,
+      universityId
     } = await req.json();
 
     if (!title || !description || !subject || !course || !year || !price || !driveLink) {
@@ -45,7 +47,8 @@ export async function POST(req: NextRequest) {
         price: parseFloat(price),
         driveLink,
         tags,
-        authorId: decoded.userId
+        authorId: decoded.userId,
+        universityId
       }
     });
 
