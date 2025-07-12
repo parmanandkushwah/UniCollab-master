@@ -15,15 +15,35 @@ import {
   Plus,
   DollarSign,
   Eye,
-  BookOpen,
   AlertCircle,
   ExternalLink
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/dashboard-layout';
 import { toast } from 'sonner';
 
+const validateGoogleDriveLink = (link: string): boolean => {
+  const driveRegex = /^(https:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=|drive\/folders\/|u\/\d+\/folders\/|u\/\d+\/file\/d\/|u\/\d+\/open\?id=)[a-zA-Z0-9_-]+(?:\/[^\s]*)?)$/;
+  return (
+    driveRegex.test(link) ||
+    link.startsWith('https://docs.google.com/presentation/d/') ||
+    link.startsWith('https://docs.google.com/document/d/') ||
+    link.startsWith('https://docs.google.com/spreadsheets/d/')
+  );
+};
+
+type FormDataType = {
+  title: string;
+  description: string;
+  subject: string;
+  course: string;
+  year: string;
+  price: string;
+  driveLink: string;
+  tags: string[];
+};
+
 export default function UploadPage() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     title: '',
     description: '',
     subject: '',
@@ -31,8 +51,9 @@ export default function UploadPage() {
     year: '',
     price: '',
     driveLink: '',
-    tags: [] as string[]
+    tags: []
   });
+
   const [newTag, setNewTag] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
@@ -43,7 +64,7 @@ export default function UploadPage() {
 
   const years = ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate'];
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof FormDataType, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -67,20 +88,17 @@ export default function UploadPage() {
     }));
   };
 
-  const validateGoogleDriveLink = (link: string) => {
-    const driveRegex = /^(https:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=|drive\/folders\/|u\/\d+\/folders\/|u\/\d+\/file\/d\/|u\/\d+\/open\?id=)[a-zA-Z0-9_-]+(?:\/[^\s]*)?)$/;
-    return driveRegex.test(link) || link.startsWith('https://docs.google.com/presentation/d/') || link.startsWith('https://docs.google.com/document/d/') || link.startsWith('https://docs.google.com/spreadsheets/d/');
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUploading(true);
 
-    // Basic validation
-    if (!formData.title || !formData.description || !formData.subject || !formData.course || !formData.year || !formData.price || !formData.driveLink) {
-      toast.error('Please fill in all required fields');
-      setIsUploading(false);
-      return;
+    const requiredFields: (keyof FormDataType)[] = ['title', 'description', 'subject', 'course', 'year', 'price', 'driveLink'];
+    for (const field of requiredFields) {
+      if (!formData[field]) {
+        toast.error('Please fill in all required fields');
+        setIsUploading(false);
+        return;
+      }
     }
 
     if (!validateGoogleDriveLink(formData.driveLink)) {
@@ -89,21 +107,34 @@ export default function UploadPage() {
       return;
     }
 
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+    if (!currentUser?.id || !currentUser?.universityId) {
+      toast.error('User authentication failed. Please log in again.');
+      setIsUploading(false);
+      return;
+    }
+
+    const fullData = {
+      ...formData,
+      authorId: currentUser.id,
+      universityId: currentUser.universityId,
+      price: parseFloat(formData.price),
+    };
+
     try {
       const response = await fetch('/api/notes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(fullData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         toast.success('Notes uploaded successfully! They will be reviewed before being published.');
-        
-        // Reset form
         setFormData({
           title: '',
           description: '',

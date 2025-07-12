@@ -1,3 +1,5 @@
+// app/api/notes/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken, JwtPayload } from '@/lib/auth';
@@ -18,59 +20,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const { noteId } = await req.json();
+    const {
+      title,
+      description,
+      subject,
+      course,
+      year,
+      price,
+      driveLink,
+      tags
+    } = await req.json();
 
-    const note = await prisma.note.findUnique({
-      where: { id: noteId },
-      include: {
-        author: {
-          select: { fullName: true }
-        }
-      }
-    });
-
-    if (!note) {
-      return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+    if (!title || !description || !subject || !course || !year || !price || !driveLink) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const existingPurchase = await prisma.purchase.findUnique({
-      where: {
-        userId_noteId: {
-          userId: decoded.userId,
-          noteId
-        }
-      }
-    });
-
-    if (existingPurchase) {
-      return NextResponse.json({ error: 'Already purchased' }, { status: 400 });
-    }
-
-    const purchase = await prisma.purchase.create({
+    const newNote = await prisma.note.create({
       data: {
-        userId: decoded.userId,
-        noteId,
-        amount: note.price ?? 0
+        title,
+        description,
+        subject,
+        course,
+        year,
+        price: parseFloat(price),
+        driveLink,
+        tags,
+        authorId: decoded.userId
       }
     });
 
-    await prisma.note.update({
-      where: { id: noteId },
-      data: {
-        downloads: {
-          increment: 1
-        }
-      }
-    });
-
-    return NextResponse.json({
-      message: 'Purchase successful',
-      purchase,
-      driveLink: note.driveLink
-    }, { status: 200 });
+    return NextResponse.json({ message: 'Note uploaded successfully', note: newNote }, { status: 200 });
 
   } catch (error) {
-    console.error('Purchase error:', error);
+    console.error('Upload error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
