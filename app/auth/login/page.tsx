@@ -33,31 +33,30 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
+        credentials: 'include', // ✅ necessary for Vercel cookies
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // ✅ Save token & user
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        // ✅ Optional: Confirm values in console
-        console.log('Token saved:', localStorage.getItem('token'));
-        console.log('User saved:', localStorage.getItem('user'));
+        console.log('Token saved:', data.token);
+        console.log('User saved:', data.user);
 
         toast.success('Login successful!');
 
-        // ✅ Wait before redirecting
+        // ✅ delay router push to ensure localStorage saved
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push('/dashboard/upload'); // or wherever
         }, 300);
       } else {
         toast.error(data.error || 'Login failed');
       }
     } catch (error) {
-      console.error('Login error:', error);
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
