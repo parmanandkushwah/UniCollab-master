@@ -39,11 +39,17 @@ export default function LoginPage() {
 
     const data = await response.json();
 
-    if (response.ok) {
-      localStorage.setItem('token', data.token); // ✅ Save token in localStorage
-      toast.success('Login successful!');
-      router.push('/dashboard'); // ✅ Redirect after successful login
-    } else {
+   if (response.ok) {
+  // ✅ Save token and user info in localStorage
+  localStorage.setItem('token', data.token);
+  localStorage.setItem('user', JSON.stringify(data.user)); // ✅ Save user
+
+  toast.success('Login successful!');
+  router.push('/dashboard');
+}
+
+    
+    else {
       toast.error(data.error || 'Login failed');
     }
   } catch (error) {
