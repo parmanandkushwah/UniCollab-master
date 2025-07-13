@@ -33,12 +33,14 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       message: 'Login successful',
       token, // <-- important to return this so frontend can store in localStorage
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        university: user.university,
-      },
+     user: {
+  id: user.id,
+  email: user.email,
+  fullName: user.fullName,
+  universityId: user.universityId, // ✅ Add this
+  university: user.university,
+},
+
     });
 
     response.cookies.set('auth-token', token, {

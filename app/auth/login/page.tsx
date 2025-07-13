@@ -24,41 +24,45 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoading(true);
+    e.preventDefault();
+    setIsLoading(true);
 
-  try {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-   if (response.ok) {
-  // ✅ Save token and user info in localStorage
-  localStorage.setItem('token', data.token);
-  localStorage.setItem('user', JSON.stringify(data.user)); // ✅ Save user
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
 
-  toast.success('Login successful!');
-  router.push('/dashboard');
-}
+        // ✅ Optional: Confirm values in console
+        console.log('Token saved:', localStorage.getItem('token'));
+        console.log('User saved:', localStorage.getItem('user'));
 
-    
-    else {
-      toast.error(data.error || 'Login failed');
+        toast.success('Login successful!');
+
+        // ✅ Wait before redirecting
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 300);
+      } else {
+        toast.error(data.error || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    toast.error('Something went wrong. Please try again.');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center p-4">
