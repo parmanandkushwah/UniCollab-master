@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,21 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Upload, 
-  Link as LinkIcon, 
-  X, 
-  Plus,
-  DollarSign,
-  Eye,
-  AlertCircle,
-  ExternalLink
-} from 'lucide-react';
+import { Upload, Link as LinkIcon, X, Plus, DollarSign, Eye, AlertCircle, ExternalLink } from 'lucide-react';
 import DashboardLayout from '@/components/layout/dashboard-layout';
 import { toast } from 'sonner';
 
 const validateGoogleDriveLink = (link: string): boolean => {
-  const driveRegex = /^(https:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=|drive\/folders\/|u\/\d+\/folders\/|u\/\d+\/file\/d\/|u\/\d+\/open\?id=)[a-zA-Z0-9_-]+(?:\/[^\s]*)?)$/;
+  const driveRegex = /^(https:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=|drive\/folders\/|u\/\d+\/folders\/|u\/\d+\/file\/d\/|u\/\d+\/open\?id=)[a-zA-Z0-9_-]+)/;
   return (
     driveRegex.test(link) ||
     link.startsWith('https://docs.google.com/presentation/d/') ||
@@ -51,32 +42,30 @@ export default function UploadPage() {
     year: '',
     price: '',
     driveLink: '',
-    tags: []
+    tags: [],
   });
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [newTag, setNewTag] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-  const subjects = [
-    'Mathematics', 'Chemistry', 'Computer Science', 'Economics', 
-    'Physics', 'Business', 'Biology', 'Psychology', 'Engineering', 'Literature'
-  ];
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      setCurrentUser(JSON.parse(user));
+    }
+  }, []);
 
+  const subjects = ['Mathematics', 'Chemistry', 'Computer Science', 'Economics', 'Physics', 'Business', 'Biology', 'Psychology', 'Engineering', 'Literature'];
   const years = ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate'];
 
   const handleInputChange = (field: keyof FormDataType, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const addTag = () => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, newTag.trim()]
-      }));
+      setFormData(prev => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
       setNewTag('');
     }
   };
@@ -84,7 +73,7 @@ export default function UploadPage() {
   const removeTag = (tagToRemove: string) => {
     setFormData(prev => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: prev.tags.filter(tag => tag !== tagToRemove),
     }));
   };
 
@@ -107,9 +96,13 @@ export default function UploadPage() {
       return;
     }
 
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!currentUser) {
+      toast.error('User not loaded yet. Please wait...');
+      setIsUploading(false);
+      return;
+    }
 
-    if (!currentUser?.id || !currentUser?.universityId) {
+    if (!currentUser.id || !currentUser.universityId) {
       toast.error('User authentication failed. Please log in again.');
       setIsUploading(false);
       return;
@@ -125,9 +118,7 @@ export default function UploadPage() {
     try {
       const response = await fetch('/api/notes', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(fullData),
       });
 
@@ -143,7 +134,7 @@ export default function UploadPage() {
           year: '',
           price: '',
           driveLink: '',
-          tags: []
+          tags: [],
         });
       } else {
         toast.error(data.error || 'Failed to upload notes');
