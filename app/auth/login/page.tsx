@@ -51,7 +51,7 @@ export default function LoginPage() {
 
         // ✅ delay router push to ensure localStorage saved
         setTimeout(() => {
-          router.push('/dashboard/upload'); // or wherever
+          router.push('/dashboard'); // or wherever
         }, 300);
       } else {
         toast.error(data.error || 'Login failed');
