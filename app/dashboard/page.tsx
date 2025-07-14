@@ -283,9 +283,13 @@ useEffect(() => {
 ))}
 
                 
-                <Button className="w-full" variant="outline">
-                  Join More Groups
-                </Button>
+               <Link href="/dashboard/join-groups">
+  <Button className="w-full" variant="outline">
+    Join More Groups
+  </Button>
+</Link>
+
+
               </CardContent>
             </Card>
           </div>
