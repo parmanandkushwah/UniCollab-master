@@ -96,7 +96,7 @@ export default function NotesPage() {
 
   const handlePurchase = async (noteId: string, title: string, price: number) => {
     try {
-      const response = await fetch('/api/notes/purchase', {
+      const response = await fetch('/api/purchase', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
