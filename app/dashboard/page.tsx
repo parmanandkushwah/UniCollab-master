@@ -64,29 +64,21 @@ export default function DashboardPage() {
     fetchNotes();
   }, []);
 
-  const studyGroups = [
-    {
-      id: 1,
-      name: "Advanced Calculus Study Group",
-      members: 24,
-      activity: "2 hours ago",
-      subject: "Mathematics"
-    },
-    {
-      id: 2,
-      name: "Organic Chemistry Discussion",
-      members: 18,
-      activity: "4 hours ago",
-      subject: "Chemistry"
-    },
-    {
-      id: 3,
-      name: "CS Algorithm Practice",
-      members: 31,
-      activity: "1 day ago",
-      subject: "Computer Science"
+  const [studyGroups, setStudyGroups] = useState([]);
+
+useEffect(() => {
+  const fetchGroups = async () => {
+    try {
+      const res = await fetch('/api/study-groups');
+      const data = await res.json();
+      setStudyGroups(data);
+    } catch (err) {
+      console.error("Failed to load groups", err);
     }
-  ];
+  };
+
+  fetchGroups();
+}, []);
 
   return (
     <DashboardLayout>
@@ -203,10 +195,15 @@ export default function DashboardPage() {
                       Top-rated study materials from your subjects
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm">
-                    View All
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Button 
+  variant="outline" 
+  size="sm"
+  onClick={() => router.push('/notes')}
+>
+  View All
+  <ChevronRight className="ml-2 h-4 w-4" />
+</Button>
+
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">

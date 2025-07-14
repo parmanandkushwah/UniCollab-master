@@ -119,3 +119,14 @@ enum Role {
   ADMIN
   UNIVERSITY_ADMIN
 }
+
+model StudyGroup {
+  id          String   @id @default(uuid())
+  name        String
+  subject     String
+  members     Int      @default(0)
+  lastActive  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
