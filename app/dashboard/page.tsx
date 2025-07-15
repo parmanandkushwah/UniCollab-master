@@ -255,44 +255,46 @@ useEffect(() => {
             </Card>
           </div>
 
-          {/* Study Groups */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Study Groups</CardTitle>
-                <CardDescription>
-                  Active discussions in your courses
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {studyGroups.map((group: any) => (
-  <div key={group.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-    <div className="flex items-center justify-between mb-2">
-      <h3 className="font-medium text-gray-900">{group.name}</h3>
-      <MessageSquare className="h-4 w-4 text-gray-400" />
-    </div>
-    <div className="flex items-center justify-between text-sm text-gray-600">
-      <div className="flex items-center">
-        <Users className="h-4 w-4 mr-1" />
-        {group.members} members
-      </div>
-      <Badge variant="outline">{group.subject}</Badge>
-    </div>
-    <p className="text-xs text-gray-500 mt-2">Last activity: {new Date(group.lastActive).toLocaleString()}</p>
-  </div>
-))}
-
-                
-               <Link href="/dashboard/join-groups">
-  <Button className="w-full" variant="outline">
-    Join More Groups
-  </Button>
-</Link>
-
-
-              </CardContent>
-            </Card>
+          
+{/* Study Groups */}
+<div>
+  <Card>
+    <CardHeader>
+      <CardTitle>Your Study Groups</CardTitle>
+      <CardDescription>
+        Active discussions in your courses
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {studyGroups.map((group: any) => (
+        <Link href={`/dashboard/groups/${group.id}`} key={group.id}>
+          <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-medium text-gray-900">{group.name}</h3>
+              <MessageSquare className="h-4 w-4 text-gray-400" />
+            </div>
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <div className="flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                {group.members} members
+              </div>
+              <Badge variant="outline">{group.subject}</Badge>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Last activity: {new Date(group.lastActive).toLocaleString()}
+            </p>
           </div>
+        </Link>
+      ))}
+
+      <Link href="/dashboard/join-groups">
+        <Button className="w-full" variant="outline">
+          Join More Groups
+        </Button>
+      </Link>
+    </CardContent>
+  </Card>
+</div>
         </div>
       </div>
     </DashboardLayout>

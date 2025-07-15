@@ -1,8 +1,10 @@
+// app/dashboard/create-group/page.tsx
+
 'use client';
 
 import { useState } from 'react';
 
-export default function CreateGroupForm() {
+export default function CreateGroupPage() {
   const [name, setName] = useState('');
   const [subject, setSubject] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,7 +41,7 @@ export default function CreateGroupForm() {
   };
 
   return (
-    <div className="p-6 border rounded-md max-w-md space-y-4">
+    <div className="p-6 border rounded-md max-w-md mx-auto space-y-4">
       <h2 className="text-xl font-semibold">Create New Study Group</h2>
       <input
         type="text"
