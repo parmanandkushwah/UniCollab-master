@@ -108,10 +108,10 @@ useEffect(() => {
                 <Upload className="ml-2 h-4 w-4" />
               </Button> */}
               <Link href="/dashboard/upload">
-      <Button className="bg-white text-blue-600 hover:bg-gray-100">
+      {/* <Button className="bg-white text-blue-600 hover:bg-gray-100">
         Upload New Notes
         <Upload className="ml-2 h-4 w-4" />
-      </Button>
+      </Button> */}
     </Link>
             </div>
           </div>
