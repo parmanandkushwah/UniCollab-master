@@ -78,24 +78,30 @@ export default function JoinGroupsPage() {
         <div className="grid md:grid-cols-2 gap-6">
           {filteredGroups.map((group) => (
            // same setup as before...
-<Card key={group.id} className="group hover:shadow-md transition-shadow">
-  <CardHeader className="pb-2">
-    <div className="flex items-start justify-between">
+<Card key={group.id} className="group hover:shadow-lg transition-shadow duration-200">
+  <CardHeader>
+    <div className="flex justify-between items-start">
       <div>
-        <CardTitle className="text-lg group-hover:text-blue-600 transition">
+        <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
           {group.name}
         </CardTitle>
-        <CardDescription className="text-sm text-gray-500">{group.subject}</CardDescription>
+        <p className="text-sm text-gray-600">{group.subject}</p>
       </div>
-      <Badge variant="secondary">{group.subject}</Badge>
+      <Badge variant="outline" className="text-xs">{group.members} members</Badge>
     </div>
   </CardHeader>
-  <CardContent className="flex justify-between items-center">
-    <div className="flex items-center gap-2 text-sm text-gray-500">
-      <Users className="h-4 w-4" />
-      {group.members} members
-    </div>
-    <Button size="sm" onClick={() => handleJoin(group.id)}>Join</Button>
+  <CardContent className="space-y-3">
+    <p className="text-xs text-gray-500">
+      Last Active: {new Date(group.lastActive).toLocaleString()}
+    </p>
+    <Button
+      size="sm"
+      className="w-full bg-blue-600 text-white hover:bg-blue-700"
+      onClick={() => handleJoin(group.id)}
+    >
+      <Users className="h-4 w-4 mr-2" />
+      Join Group
+    </Button>
   </CardContent>
 </Card>
 
