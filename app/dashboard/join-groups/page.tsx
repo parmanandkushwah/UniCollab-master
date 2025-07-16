@@ -52,12 +52,55 @@ export default function JoinGroupsPage() {
 
   const handleJoin = (id: string) => {
     alert(`Joined group ID: ${id}`);
-    // Optional: call an API to mark user as joined
+    // Optional: call API to join group
   };
+
+  // Prepare conditional content
+  let content;
+  if (loading) {
+    content = <p>Loading groups...</p>;
+  } else if (filteredGroups.length === 0) {
+    content = <p>No groups found.</p>;
+  } else {
+    content = (
+      <div className="grid md:grid-cols-2 gap-6">
+        {filteredGroups.map((group) => (
+          <Card key={group.id} className="group hover:shadow-lg transition-shadow duration-200">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    {group.name}
+                  </CardTitle>
+                  <p className="text-sm text-gray-600">{group.subject}</p>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {group.members} members
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-gray-500">
+                Last Active: {new Date(group.lastActive).toLocaleString()}
+              </p>
+              <Button
+                size="sm"
+                className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                onClick={() => handleJoin(group.id)}
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Join Group
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
-      {/* Header and Search */}
+      {/* Header & Search */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Browse Study Groups</h1>
@@ -74,43 +117,8 @@ export default function JoinGroupsPage() {
         </div>
       </div>
 
-      {/* Group Results */}
-      {loading ? (
-        <p>Loading groups...</p>
-      ) : filteredGroups.length === 0 ? (
-        <p>No groups found.</p>
-      ) : (
-        <div className="grid md:grid-cols-2 gap-6">
-          {filteredGroups.map((group) => (
-            <Card key={group.id} className="group hover:shadow-lg transition-shadow duration-200">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                      {group.name}
-                    </CardTitle>
-                    <p className="text-sm text-gray-600">{group.subject}</p>
-                  </div>
-                  <Badge variant="outline" className="text-xs">{group.members} members</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-xs text-gray-500">
-                  Last Active: {new Date(group.lastActive).toLocaleString()}
-                </p>
-                <Button
-                  size="sm"
-                  className="w-full bg-blue-600 text-white hover:bg-blue-700"
-                  onClick={() => handleJoin(group.id)}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Join Group
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* Group Cards or Loader */}
+      {content}
     </div>
   );
 }
