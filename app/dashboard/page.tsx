@@ -207,7 +207,7 @@ useEffect(() => {
                   <Button 
   variant="outline" 
   size="sm"
-  onClick={() => router.push('/notes')}
+ onClick={() => router.push('/dashboard/notes')}
 >
   View All
   <ChevronRight className="ml-2 h-4 w-4" />
