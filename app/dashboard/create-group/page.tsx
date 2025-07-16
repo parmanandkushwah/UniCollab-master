@@ -3,6 +3,10 @@
 'use client';
 
 import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import DashboardLayout from '@/components/layout/dashboard-layout';
 
 export default function CreateGroupPage() {
   const [name, setName] = useState('');
@@ -41,29 +45,40 @@ export default function CreateGroupPage() {
   };
 
   return (
-    <div className="p-6 border rounded-md max-w-md mx-auto space-y-4">
-      <h2 className="text-xl font-semibold">Create New Study Group</h2>
-      <input
-        type="text"
-        placeholder="Group Name"
-        className="border px-3 py-2 w-full"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Subject"
-        className="border px-3 py-2 w-full"
-        value={subject}
-        onChange={(e) => setSubject(e.target.value)}
-      />
-      <button
-        onClick={handleSubmit}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-        disabled={loading}
-      >
-        {loading ? "Creating..." : "Create Group"}
-      </button>
-    </div>
+    <DashboardLayout>
+      <div className="max-w-2xl mx-auto p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Create New Study Group</CardTitle>
+            <CardDescription>Fill in the details below to create your group</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Group Name</label>
+              <Input
+                placeholder="Enter group name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+              <Input
+                placeholder="Enter subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
+            </div>
+            <Button
+              onClick={handleSubmit}
+              className="w-full bg-blue-600 text-white hover:bg-blue-700"
+              disabled={loading}
+            >
+              {loading ? "Creating..." : "Create Group"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
   );
 }
